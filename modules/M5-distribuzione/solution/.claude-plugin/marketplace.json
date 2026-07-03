@@ -1,0 +1,17 @@
+{
+  "name": "my-workshop-marketplace",
+  "owner": { "name": "Your Name", "email": "you@example.com" },
+  "metadata": {
+    "description": "Il mio marketplace del workshop",
+    "version": "0.1.0",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "claude-dev-kit",
+      "source": "claude-dev-kit",
+      "description": "endpoint-creator skill + dba subagent + SubagentStart schema-injection hook.",
+      "version": "0.1.0"
+    }
+  ]
+}

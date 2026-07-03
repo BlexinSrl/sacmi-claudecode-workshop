@@ -1,0 +1,28 @@
+# Node
+node_modules/
+dist/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# .NET
+bin/
+obj/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Workshop runtime
+audit.log
+.env
+*.local
+.tokensave/

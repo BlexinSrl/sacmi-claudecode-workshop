@@ -1,0 +1,11 @@
+{
+  "name": "claude-dev-kit",
+  "version": "0.1.0",
+  "description": "Workshop plugin: endpoint-creator skill + dba subagent + SubagentStart hook that injects the DB schema as context.",
+  "author": {
+    "name": "Workshop Participant",
+    "email": "you@example.com"
+  },
+  "license": "MIT",
+  "keywords": ["dba", "endpoint", "context"]
+}

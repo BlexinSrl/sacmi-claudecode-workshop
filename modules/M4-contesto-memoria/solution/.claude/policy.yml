@@ -1,0 +1,25 @@
+# Workshop policy file — valutato da .claude/hooks/pre-tool-use.sh
+#
+# Sections:
+#   shell_blocked: regex matched against full shell command
+#   file_writes_blocked: regex matched against target path of Edit/Write/MultiEdit
+
+shell_blocked:
+  - pattern: 'rm\s+-rf?'
+    reason: "Distruzione ricorsiva non recuperabile"
+  - pattern: 'git\s+push\s+--force(\s|$)'
+    reason: "Force push può sovrascrivere lavoro altrui"
+  - pattern: 'git\s+reset\s+--hard'
+    reason: "Reset hard cancella modifiche non committate"
+  - pattern: 'DROP\s+TABLE'
+    reason: "Drop table su SQL = perdita schema"
+  - pattern: 'DELETE\s+FROM\s+\w+\s*;'
+    reason: "DELETE senza WHERE = cancellazione totale"
+
+file_writes_blocked:
+  - pattern: '\.key$|\.pem$'
+    reason: "Mai scrivere chiavi crittografiche da codice generato"
+  - pattern: 'secrets/'
+    reason: "Cartella secrets/ è gestita manualmente"
+  - pattern: '\.env$'
+    reason: "Mai scrivere file di environment dal codice generato"

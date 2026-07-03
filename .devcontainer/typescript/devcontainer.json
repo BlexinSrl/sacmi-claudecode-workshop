@@ -1,0 +1,25 @@
+{
+  "name": "Workshop · TypeScript (Node 20)",
+  "image": "mcr.microsoft.com/devcontainers/universal:2-linux",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "dbaeumer.vscode-eslint"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "chat.useCustomAgentHooks": true,
+        "chat.useAgentsMdFile": true,
+        "chat.useNestedAgentsMdFiles": true,
+        "chat.experimental.useSkillAdherencePrompt": true
+      }
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/typescript/post-create.sh",
+  "forwardPorts": [3000],
+  "remoteUser": "codespace"
+}
