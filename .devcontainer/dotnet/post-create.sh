@@ -14,8 +14,7 @@ done
 
 # --- M4 (Contesto & Memoria): tooling pre-disponibile ---
 # tokensave: code-intelligence MCP server. L'immagine universal NON ha Rust/cargo, quindi
-# scarichiamo il binario PRECOMPILATO dalle release GitHub (niente compilazione da sorgente,
-# lenta e fragile su 2-core). Vedi tokensave.dev per i 3 passi: 1) binario, 2) `tokensave
+# scarichiamo il binario PRECOMPILATO dalle release GitHub. Vedi tokensave.dev per i 3 passi: 1) binario, 2) `tokensave
 # install` registra il server MCP + prompt rules per Claude Code (config utente ~/.claude.json),
 # 3) `tokensave init`. Qui facciamo 1) e 2); NIENTE init (hands-on M4). Nulla deve bloccare il
 # post-create.
