@@ -2,7 +2,8 @@
   "name": "Workshop · TypeScript (Node 20)",
   "image": "mcr.microsoft.com/devcontainers/universal:2-linux",
   "features": {
-    "ghcr.io/devcontainers/features/node:1": { "version": "20" }
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" },
+    "ghcr.io/meaningful-ooo/devcontainer-features/homebrew:2": {}
   },
   "customizations": {
     "vscode": {
