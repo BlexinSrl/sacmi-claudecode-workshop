@@ -1,6 +1,6 @@
 {
   "name": "Workshop · .NET 10",
-  "image": "mcr.microsoft.com/devcontainers/universal:2-linux",
+  "image": "mcr.microsoft.com/devcontainers/universal:3-linux",
   "features": {
     "ghcr.io/devcontainers/features/dotnet:2": { "version": "10.0" }
   },

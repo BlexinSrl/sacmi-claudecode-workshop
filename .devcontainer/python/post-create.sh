@@ -26,11 +26,12 @@ for module in M1-istruzioni M2-capacita M3-governance M4-contesto-memoria M5-dis
 done
 
 # --- M4 (Contesto & Memoria): tooling pre-disponibile ---
-# tokensave: code-intelligence MCP server. L'immagine universal NON ha Rust/cargo, quindi
-# scarichiamo il binario PRECOMPILATO dalle release GitHub. Vedi tokensave.dev per i 3 passi: 1) binario, 2) `tokensave
-# install` registra il server MCP + prompt rules per Claude Code (config utente ~/.claude.json),
-# 3) `tokensave init`. Qui facciamo 1) e 2); NIENTE init (hands-on M4). Nulla deve bloccare il
-# post-create.
+# tokensave: code-intelligence MCP server. Scarichiamo il binario PRECOMPILATO dalle release
+# GitHub (niente cargo/compilazione). Richiede glibc >=2.34: per questo il devcontainer usa
+# universal:3-linux (Ubuntu Noble, glibc 2.39) e non la 2-linux (Focal, glibc 2.31, troppo
+# vecchia -> il binario abortiva con "GLIBC_2.34 not found"). Vedi tokensave.dev per i 3 passi:
+# 1) binario, 2) `tokensave install` (server MCP + prompt rules, config utente ~/.claude.json),
+# 3) `tokensave init`. Qui 1) e 2); NIENTE init (hands-on M4). Nulla deve bloccare il post-create.
 if ! command -v tokensave >/dev/null 2>&1; then
   case "$(uname -m)" in
     x86_64|amd64)  ts_target="x86_64-linux" ;;
