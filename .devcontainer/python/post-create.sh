@@ -64,6 +64,14 @@ if command -v tokensave >/dev/null 2>&1; then
   tokensave install --agent claude --git-hook no || true
 fi
 
+# Claude Code CLI da terminale (oltre all'estensione VS Code): installer nativo ufficiale
+# (raccomandato dai doc). Non-root, mette il binario in ~/.local/bin (gia' sul PATH del
+# codespace), si auto-aggiorna in background. Non deve bloccare il post-create.
+if ! command -v claude >/dev/null 2>&1; then
+  echo "  - installing Claude Code CLI (native installer)"
+  curl -fsSL https://claude.ai/install.sh | bash || echo "  WARN: install Claude Code CLI fallito. Vedi https://code.claude.com/docs/en/setup"
+fi
+
 # episodic-memory: attivazione MANUALE (plugin Claude Code) - vedi README principale.
 echo "  episodic-memory (modulo M4): attivalo PRESTO in Claude Code, cosi' M1-M3"
 echo "  vengono indicizzati. Comandi (dettagli nel README principale):"
