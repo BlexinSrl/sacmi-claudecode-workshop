@@ -204,11 +204,13 @@ Chiudi la sessione (o `/clear`) e aprine una nuova nel workspace. Chiedi:
 
 > **Attenzione!** La Task API è una codebase piccola, semplice un `Read` diretto costa pochi token e il risparmio reale è modesto. Tokensave brilla su repo da migliaia di file. Il valore che porti a casa da questo esercizio non è il numero di token salvati ora, ma il **pattern**: query strutturata invece di scansione grezza, e la regola tokensave-first.
 
-> **Prerequisito.** Tokensave è già registrato in `.mcp.json` e installato dal devcontainer, quindi il server dovrebbe essere disponibile. Se il binario non è sul `PATH` (es. lavori in locale senza devcontainer), installalo manualmente - è un binario Rust nativo, non npm/pip:
+> **Prerequisito.** Nel Codespace il devcontainer ha già fatto due dei tre passi di [tokensave.dev](https://tokensave.dev/): ha **installato il binario** e ha eseguito **`tokensave install`** (che registra il server MCP nel config utente `~/.claude.json` — **non** nel `.mcp.json` del repo — e aggiunge le prompt rules tokensave-first). Quindi il server dovrebbe essere già disponibile. Se lavori **in locale senza devcontainer** rifai a mano quei due passi — è un binario Rust nativo, non npm/pip:
 > ```bash
-> cargo install tokensave                 # qualsiasi piattaforma (compila da sorgente)
-> brew install aovestdipaperino/tap/tokensave   # macOS
+> cargo install tokensave                        # 1) installa il binario (qualsiasi piattaforma)
+> brew install aovestdipaperino/tap/tokensave    #    oppure, su macOS
+> tokensave install                              # 2) registra il server MCP + prompt rules (una volta)
 > ```
+> Il terzo passo (`tokensave init`) è l'esercizio qui sotto.
 
 #### Step 1 - Inizializza l'indice
 
@@ -238,7 +240,7 @@ Claude dovrebbe chiamare `tokensave_context` (e magari `tokensave_search` o `tok
 - La risposta nomina simboli/file realmente esistenti nel tuo starter.
 - Su questa codebase piccola la differenza di costo è modesta
 
-Nota: alla installazione di tokensave, viene aggiunte istruzioni al file utente CLAUDE.md per dire a Claude di usare tokensave prima di `Read`/grep o agenti di esplorazione.
+Nota: è `tokensave install` (il passo 2 del prerequisito, già eseguito dal devcontainer) ad aggiungere al file utente CLAUDE.md le istruzioni che dicono a Claude di usare tokensave prima di `Read`/grep o agenti di esplorazione.
 ---
 
 ### Argomento 4 - Episodic memory
