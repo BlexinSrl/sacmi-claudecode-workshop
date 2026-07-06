@@ -204,13 +204,11 @@ Chiudi la sessione (o `/clear`) e aprine una nuova nel workspace. Chiedi:
 
 > **Attenzione!** La Task API è una codebase piccola, semplice un `Read` diretto costa pochi token e il risparmio reale è modesto. Tokensave brilla su repo da migliaia di file. Il valore che porti a casa da questo esercizio non è il numero di token salvati ora, ma il **pattern**: query strutturata invece di scansione grezza, e la regola tokensave-first.
 
-> **Prerequisito.** Nel Codespace il devcontainer ha già fatto due dei tre passi di [tokensave.dev](https://tokensave.dev/): ha **installato il binario** e ha eseguito **`tokensave install`** (che registra il server MCP nel config utente `~/.claude.json` — **non** nel `.mcp.json` del repo — e aggiunge le prompt rules tokensave-first). Quindi il server dovrebbe essere già disponibile. Se lavori **in locale senza devcontainer** rifai a mano quei due passi — è un binario Rust nativo, non npm/pip:
+> **Prerequisito.** Nel Codespace il devcontainer ha già fatto due dei tre passi di [tokensave.dev](https://tokensave.dev/): ha **installato il binario** e ha eseguito **`tokensave install`**. Quindi il server dovrebbe essere già disponibile. Se lavori **in locale senza devcontainer** rifai a mano quei due passi e poi prosegui con lo Step 1:
 > ```bash
 > cargo install tokensave                        # 1) installa il binario (qualsiasi piattaforma)
-> brew install aovestdipaperino/tap/tokensave    #    oppure, su macOS
 > tokensave install                              # 2) registra il server MCP + prompt rules (una volta)
 > ```
-> Il terzo passo (`tokensave init`) è l'esercizio qui sotto.
 
 #### Step 1 - Inizializza l'indice
 

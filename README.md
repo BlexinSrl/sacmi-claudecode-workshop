@@ -156,7 +156,12 @@ In locale gli strumenti di **M4 (Contesto & Memoria)** non vengono installati au
   /plugin marketplace add obra/superpowers-marketplace
   /plugin install episodic-memory@superpowers-marketplace
   ```
-- **tokensave** (MCP di code intelligence): tre passi (vedi [tokensave.dev](https://tokensave.dev/)). **1)** installa il binario e mettilo sul `PATH` — `cargo install tokensave` oppure, su macOS, `brew install aovestdipaperino/tap/tokensave`; **2)** registra il server MCP per Claude Code con `tokensave install` (una volta — scrive l'entry nel config utente `~/.claude.json`, **non** nel `.mcp.json` del repo, e aggiunge le prompt rules tokensave-first); **3)** l'indicizzazione del progetto (`tokensave init`) la fai durante M4.
+- **tokensave**: tre passi ([tokensave.dev](https://tokensave.dev/)). 
+> ```bash
+> cargo install tokensave                        # 1) installa il binario (qualsiasi piattaforma)
+> tokensave install                              # 2) registra il server MCP + prompt rules (una volta)
+> ```
+L'indicizzazione del progetto la fai durante M4.
 
 Approfondimenti in [`modules/M4-contesto-memoria/README.md`](modules/M4-contesto-memoria/README.md).
 
