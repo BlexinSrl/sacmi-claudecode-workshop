@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-set -euo pipefail
+# Best-effort: NIENTE `set -e`. Un singolo comando che fallisce (una restore a freddo, un
+# download transitorio, ...) NON deve abortire l'intero post-create e lasciare il container a
+# meta' (con `set -e` un errore precoce lasciava tokensave/claude non installati). Gli step
+# critici gestiscono gia' i propri errori con `|| true` / if.
+set -uo pipefail
 
 echo "==> Workshop post-create (.NET)"
 
