@@ -65,7 +65,7 @@ Nel modulo **M4 (Contesto & Memoria)** userai l'**episodic memory**, che cerca n
 /plugin install episodic-memory@superpowers-marketplace
 ```
 
-Il plugin registra da sé un hook `SessionStart` che mantiene aggiornato l'indice. (tokensave, l'altro strumento di M4, è già installato dal devcontainer.) Dettagli in [`modules/M4-contesto-memoria/README.md`](modules/M4-contesto-memoria/README.md).
+Il plugin registra da sé un hook `SessionStart` che mantiene aggiornato l'indice. (tokensave, l'altro strumento di M4, è già installato **e registrato** dal devcontainer via `tokensave install`; in M4 ti resta solo `tokensave init`.) Dettagli in [`modules/M4-contesto-memoria/README.md`](modules/M4-contesto-memoria/README.md).
 
 ## Setup locale
 
@@ -156,7 +156,12 @@ In locale gli strumenti di **M4 (Contesto & Memoria)** non vengono installati au
   /plugin marketplace add obra/superpowers-marketplace
   /plugin install episodic-memory@superpowers-marketplace
   ```
-- **tokensave** (MCP di code intelligence): installa il binario e mettilo sul `PATH` — `cargo install tokensave` oppure, su macOS, `brew install aovestdipaperino/tap/tokensave`. L'entry in `.mcp.json` è già committata; l'`init` del progetto lo fai durante M4.
+- **tokensave**: tre passi ([tokensave.dev](https://tokensave.dev/)). 
+> ```bash
+> cargo install tokensave                        # 1) installa il binario (qualsiasi piattaforma)
+> tokensave install                              # 2) registra il server MCP + prompt rules (una volta)
+> ```
+L'indicizzazione del progetto la fai durante M4.
 
 Approfondimenti in [`modules/M4-contesto-memoria/README.md`](modules/M4-contesto-memoria/README.md).
 

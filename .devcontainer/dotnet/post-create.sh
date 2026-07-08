@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-set -euo pipefail
+# Best-effort: NIENTE `set -e`. Un singolo comando che fallisce (una restore a freddo, un
+# download transitorio, ...) non deve abortire l'intero post-create e lasciare il container a
+# meta'. Gli step gestiscono i propri errori con `|| true` / if.
+set -uo pipefail
 
 echo "==> Workshop post-create (.NET)"
 
@@ -12,22 +15,7 @@ for module in M1-istruzioni M2-capacita M3-governance M4-contesto-memoria M5-dis
   done
 done
 
-# --- M4 (Contesto & Memoria): tooling pre-disponibile ---
-# tokensave: code-intelligence MCP server (binario Rust). Install idempotente; NIENTE init
-# (l'init del progetto è hands-on del partecipante in M4). Non deve bloccare il post-create.
-if ! command -v tokensave >/dev/null 2>&1; then
-  if command -v cargo >/dev/null 2>&1; then
-    echo "  - installing tokensave (cargo)"
-    cargo install tokensave --no-default-features || true
-  else
-    echo "  WARN: cargo non disponibile, tokensave non installato. Vedi modules/M4-contesto-memoria/README.md"
-  fi
-fi
-
-# episodic-memory: attivazione MANUALE (plugin Claude Code) - vedi README principale.
-echo "  episodic-memory (modulo M4): attivalo PRESTO in Claude Code, cosi' M1-M3"
-echo "  vengono indicizzati. Comandi (dettagli nel README principale):"
-echo "    /plugin marketplace add obra/superpowers-marketplace"
-echo "    /plugin install episodic-memory@superpowers-marketplace"
-
-echo "==> Done. Open modules/M1-istruzioni/README.md to start."
+# Tooling M4 condiviso (tokensave + CLI Claude + promemoria episodic-memory + messaggio finale).
+TOOLING="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/tooling.sh"
+# shellcheck source=../tooling.sh
+source "$TOOLING" || echo "WARN: tooling condiviso non caricato ($TOOLING)"
