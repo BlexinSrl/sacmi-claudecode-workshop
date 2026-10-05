@@ -57,7 +57,7 @@ Per capire come è fatto qualcosa, l'agente di solito fa molte chiamate "grezze"
 
 ### Episodic memory: recuperare il *perché*
 
-Le memorie curate dicono *cosa* vale nel progetto. Il *perché* di una decisione (alternative scartate, trade-off, vincoli del momento) vive nelle conversazioni e di solito si perde. L'**episodic memory** è un plugin che indicizza localmente le tue conversazioni passate con Claude Code e ti permette di cercarle per significato. Non sostituisce le memorie curate: le **completa**.
+Le memorie curate dicono *cosa* vale nel progetto. Il *perché* di una decisione (alternative scartate, trade-off, vincoli del momento) vive nelle conversazioni e di solito si perde. **Episodic memory** è un plugin che indicizza localmente le tue conversazioni passate con Claude Code e ti permette di cercarle per significato. Non sostituisce le memorie di Claude Code, le **completa**.
 
 | Aspetto | Episodic memory | Memorie curate (`MEMORY.md` + file) |
 | --- | --- | --- |
@@ -83,7 +83,7 @@ Verifica che i test dello starter passino (6 test): è lo stato a cui tornerai.
 
 #### Step 2 - Un prompt che modifica più file
 
-Apri una nuova conversazione e invia:
+Apri una nuova conversazione e invia il seguente prompt:
 
 > Nel progetto `@modules/M4-contesto-memoria/starters/<linguaggio>` aggiungi una ricerca per titolo (case-insensitive) con un nuovo endpoint `GET /tasks/search?q=<query>`. Implementalo con i test.
 
@@ -95,7 +95,7 @@ Claude modifica più file (store, route, test). Rilancia i test: che passino o n
 
 **Nell'estensione VS Code**: passa il mouse sul messaggio con cui hai chiesto la ricerca, clicca il pulsante di rewind e scegli **Rewind code to here**. Le altre opzioni sono **Fork conversation from here** (nuova conversazione, codice invariato) e **Fork conversation and rewind code**.
 
-**Nella CLI** (`claude` nel terminale): premi due volte `Esc` con il prompt vuoto, oppure digita `/rewind`. Scegli il messaggio e poi una delle azioni: **Restore code and conversation**, **Restore conversation**, **Restore code**, **Summarize from here**, **Summarize up to here**. Per questo esercizio usa **Restore code**.
+**Nella CLI** (`claude` nel terminale): premi due volte `Esc` con il prompt vuoto, oppure digita `/rewind`. Scegli il messaggio e poi una delle azioni: **Restore code and conversation**, **Restore conversation**, **Restore code**, **Summarize from here**, **Summarize up to here**. Per questo esercizio usa **Restore code and conversation**.
 
 **Risultato atteso**:
 - `git status` non mostra più le modifiche dello starter;
@@ -139,23 +139,7 @@ Il seed in `modules/M4-contesto-memoria/solution/.claude/memory/` contiene quatt
 - `naming-conventions.md`: path kebab-case, `TaskItem` immutabile, store in-memory;
 - `status-codes-and-responses.md`: status code per operazione, header `Location` sul 201.
 
-Copia i file nella cartella delle memorie. L'indice viene **accodato** e non sovrascritto, perché durante M1-M3 Claude potrebbe aver già salvato delle memorie sue:
-
-```bash
-# macOS / Linux (dal root del repo, con MEM_DIR dello Step 1)
-SEED=modules/M4-contesto-memoria/solution/.claude/memory
-mkdir -p "$MEM_DIR"
-cp "$SEED"/task-api-validation.md "$SEED"/naming-conventions.md "$SEED"/status-codes-and-responses.md "$MEM_DIR"/
-cat "$SEED"/MEMORY.md >> "$MEM_DIR"/MEMORY.md
-```
-
-```powershell
-# Windows (PowerShell)
-$SEED = "modules/M4-contesto-memoria/solution/.claude/memory"
-New-Item -ItemType Directory -Force $MEM_DIR | Out-Null
-Copy-Item "$SEED/task-api-validation.md", "$SEED/naming-conventions.md", "$SEED/status-codes-and-responses.md" $MEM_DIR
-Get-Content "$SEED/MEMORY.md" | Add-Content "$MEM_DIR/MEMORY.md"
-```
+Copia i file nella cartella delle memorie. Nel file MEMORY.md le informazioni devono essere **accodate** e non sovrascritte, perché durante M1-M3 Claude potrebbe aver già salvato delle memorie sue.
 
 Apri uno dei file copiati e osserva il frontmatter:
 
@@ -251,14 +235,14 @@ Il plugin registra da solo un hook `SessionStart` che, a ogni avvio di sessione,
 
 Apri una nuova conversazione e chiedi:
 
-> Usando l'episodic memory, cerca nelle sessioni precedenti su questo progetto: quale logica di validazione abbiamo discusso per gli endpoint della Task API (per esempio per `PUT /tasks/:id`)? Quali alternative o trade-off avevamo considerato?
+> Usando episodic memory, cerca nelle sessioni precedenti su questo progetto: quale logica di validazione abbiamo discusso per gli endpoint della Task API (per esempio per `PUT /tasks/:id`)? Quali alternative o trade-off avevamo considerato?
 
 **Risultato atteso**:
 - Claude usa gli strumenti dell'episodic memory (tool `search` del plugin o il subagent `episodic-memory:search-conversations`);
 - se hai svolto M1-M3 su questa macchina, i risultati riportano estratti di quelle conversazioni (con data e progetto);
 - se lo storico è vuoto, la ricerca non trova conversazioni: atteso, passa allo Step 3.
 
-#### Step 3 - Confronta con la memoria curata
+#### Step 3 - Confronta con la memoria di Claude Code (auto memory)
 
 Chiedi:
 
