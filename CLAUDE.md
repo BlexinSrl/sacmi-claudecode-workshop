@@ -4,12 +4,12 @@
 
 Repository del workshop "The Agent Strikes Back" su Claude Code (2026). Contiene 5 moduli hands-on con 3 starter per linguaggio (.NET 10, TypeScript, Python).
 
-Il workshop guida il partecipante a creare progressivamente, **a livello del root del repo** (cioè qui), le seguenti customizations Claude Code:
+Il workshop si svolge in locale con Claude Code, a scelta tra estensione VS Code e CLI (`claude`). Il setup è nel `README.md` del root. Il workshop guida il partecipante a creare progressivamente, **a livello del root del repo** (cioè qui), le seguenti customizations Claude Code:
 - `.claude/skills/endpoint-creator/SKILL.md` (creata in M1)
 - `.claude/agents/code-reviewer.md` (creato in M2)
-- `.claude/agents/dba.md` + hook `SubagentStart` e `PreToolUse` registrati in `.claude/settings.json` + `.claude/hooks/*.{sh,ps1}` + `.claude/context/db-schema.sql` + `.claude/policy.yml` (creati in M3 - iniezione di contesto via SubagentStart e policy enforcement via PreToolUse)
-- In M4 (Contesto & Memoria) il partecipante NON committa customizations al root del workspace: fa hands-on su **checkpoints** (feature di sessione), su un **seed di memorie di progetto** (di cui i template di riferimento vivono in `modules/M4-contesto-memoria/solution/.claude/memory/`), registra **tokensave** (code-intelligence MCP) per Claude Code con `tokensave install` — che scrive l'entry MCP nel config utente `~/.claude.json`, **non** nel `.mcp.json` del repo — e indicizza il progetto con `tokensave init` (l'indice `.tokensave/` è machine-local, non committato) e usa l'**episodic memory** (Auto Memory machine-local) per recuperare decisioni da conversazioni passate.
-- `plugins/claude-safety-guard/` + `.claude-plugin/marketplace.json` (creati in M5 - il plugin impacchetta un sottoinsieme curato (skill + code-reviewer + safety hook) e viene pubblicato in un **repo marketplace separato**, non nel workspace)
+- `.claude/agents/dba.md` + hook `SubagentStart` registrato in `.claude/settings.json` + `.claude/hooks/subagent-start.{sh,ps1}` + `.claude/context/db-schema.sql` (creati in M3 - iniezione di contesto via SubagentStart)
+- In M4 (Contesto & Memoria) il partecipante NON committa customizations al root del workspace: fa hands-on su **checkpoints** (feature di sessione), su un **seed di memorie di progetto** (i template di riferimento vivono in `modules/M4-contesto-memoria/solution/.claude/memory/` e vanno copiati nella cartella machine-local dell'Auto Memory), su **tokensave** (code-intelligence MCP, registrato nel setup con `tokensave install`, che scrive nel config utente `~/.claude.json` e **non** nel `.mcp.json` del repo; in M4 si indicizza con `tokensave init`, l'indice `.tokensave/` è machine-local e non committato) e sull'**episodic memory** (plugin installato nel setup che indicizza le conversazioni passate, distinto dall'Auto Memory).
+- `plugins/workshop-dev-kit/` + `.claude-plugin/marketplace.json` (creati in M5 - il plugin impacchetta un sottoinsieme curato (skill `endpoint-creator` + agent `dba` + `context/db-schema.sql` + hook `SubagentStart`) e viene pubblicato in un **repo marketplace separato**, non nel workspace. I nomi plugin `claude-*` sono riservati; il matcher dell'hook nel plugin è `^workshop-dev-kit:dba$`)
 
 ## Stack per linguaggio
 
@@ -43,7 +43,7 @@ Il workshop guida il partecipante a creare progressivamente, **a livello del roo
 
 ## Comandi
 
-I comandi si eseguono **dentro la cartella `starters/` (o `solution/`) del modulo e linguaggio scelto**, es. `modules/M1-istruzioni/starters/dotnet/`. La working directory conta: gli stessi comandi lanciati dal root non trovano il progetto. Non c'è un linter/formatter configurato — `dotnet build` / `tsc` fanno da type-check.
+I comandi si eseguono **dentro la cartella `starters/` (o `solution/`) del modulo e linguaggio scelto**, es. `modules/M1-istruzioni/starters/dotnet/`. La working directory conta: gli stessi comandi lanciati dal root non trovano il progetto. Non c'è un linter/formatter configurato - `dotnet build` / `tsc` fanno da type-check.
 
 ### .NET 10
 ```bash
@@ -59,7 +59,7 @@ dotnet run                                                       # server su htt
 ```bash
 npm install
 npm run build                                # tsc (type-check)
-npm test                                     # vitest run — tutti i test
+npm test                                     # vitest run - tutti i test
 npx vitest run src/tasks/routes.test.ts      # singolo file
 npx vitest run -t "creates"                  # singolo test per nome
 npm run dev                                  # server su http://localhost:3000 (tsx watch)
@@ -95,6 +95,6 @@ uvicorn app.main:app                                 # server su http://localhos
 - `modules/Mn/README.md` - istruzioni del modulo n (M1, M2, M3, M4, M5).
 - `modules/Mn/starters/<lang>/` - codice di partenza per il linguaggio scelto.
 - `modules/Mn/solution/<lang>/` - codice allo stato finale del modulo.
-- `modules/Mn/solution/.claude/` - customizations cumulative (skill, agent, hook, policy) come reference da copiare al root del repo se ci si blocca.
+- `modules/Mn/solution/.claude/` - customizations cumulative (skill, agent, hook, contesto) come reference da copiare al root del repo se ci si blocca.
 - `modules/M4-contesto-memoria/` - modulo Contesto & Memoria (checkpoints, memorie, tokensave, episodic). `solution/.claude/memory/` contiene il seed di memorie di progetto (template di riferimento), `solution/<lang>/` la Task API portata avanti da M3.
 - `modules/M5-distribuzione/solution/` - eccezione: è la fotografia di un **repo marketplace separato** (solo `plugins/` + `.claude-plugin/marketplace.json`), non un workspace. I sorgenti dei bundle M5 sono in `modules/M3-governance/solution/`.

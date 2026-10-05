@@ -1,5 +1,4 @@
 -- Workshop schema iniettato dal SubagentStart hook.
--- Sorgente: modules/M3-governance/solution/.claude/context/db-schema.sql
 -- Marker workshop: BLEXIN-2026-M3-SCHEMA
 
 CREATE TABLE tasks (

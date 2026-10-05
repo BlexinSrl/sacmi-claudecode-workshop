@@ -1,178 +1,145 @@
 # Claude Code Workshop
 
-> Workshop hands-on su CLAUDE.md, Skills, Subagents, MCP, Hooks, Checkpoints, Memorie, Tokensave, Episodic memory, Plugins & Marketplace
+> Workshop hands-on su CLAUDE.md, Skills, Subagents, MCP, Hooks, Checkpoints, Memorie, Tokensave, Episodic memory, Plugins & Marketplace.
 
-> Questo workshop si segue con **Claude Code** (estensione VS Code). Concetti, teoria, prompt ed esercizi sono **identici** per i tre linguaggi di starter (.NET 10, TypeScript, Python): cambia solo lo stack del modulo che scegli. Tutte le customizations che creerai (skill, subagent, hook, plugin) vivono in `.claude/` (e in `plugins/`) al **root del workspace**.
+Il workshop si segue con **Claude Code** su un ambiente locale, a scelta tra l'**estensione per VS Code** e la **CLI** (`claude` nel terminale). Le due interfacce sono equivalenti: dove differiscono, i moduli indicano entrambe le strade (vedi [Estensione VS Code o CLI](#estensione-vs-code-o-cli)). Concetti, prompt ed esercizi sono **identici** per i tre linguaggi di starter (.NET 10, TypeScript, Python): scegli un linguaggio all'inizio e usa sempre quello. Tutte le customizations che creerai (skill, subagent, hook) vivono in `.claude/` al **root del repository**.
 
-### Step 1 - Fork del repository
+## Percorso
 
-Click sul pulsante **"Fork"** in alto a destra in questa pagina, oppure usa direttamente questo link:
+| Modulo | Argomento | Cosa crei |
+|---|---|---|
+| [M1 - Istruzioni](modules/M1-istruzioni/README.md) | CLAUDE.md + Skills | `.claude/skills/endpoint-creator/SKILL.md` |
+| [M2 - Capacità](modules/M2-capacita/README.md) | Subagents + MCP | `.claude/agents/code-reviewer.md` |
+| [M3 - Governance](modules/M3-governance/README.md) | Hooks (iniezione di contesto) | subagent `dba` + hook `SubagentStart` |
+| [M4 - Contesto & Memoria](modules/M4-contesto-memoria/README.md) | Checkpoints, Memorie, Tokensave, Episodic memory | nessun file nel repo (feature di sessione e strumenti locali) |
+| [M5 - Distribuzione](modules/M5-distribuzione/README.md) | Plugins & Marketplace | un repo marketplace separato con il plugin `workshop-dev-kit` |
 
-👉 **[Fork BlexinSrl/sacmi-claudecode-workshop](https://github.com/BlexinSrl/sacmi-claudecode-workshop)** 👈
-Nella pagina che si apre:
-- **Owner**: il tuo account GitHub (lascia il default)
-- **Repository name**: lascia `sacmi-claudecode-workshop` (o cambia se preferisci)
-- **"Copy the main branch only"**: ✅ lasciato spuntato
-- Click **"Create fork"**
+Ogni modulo ha la stessa struttura: **Teoria** => **Hands-on** (step numerati con *Risultato atteso*) => **Wrap** => **Problemi?**.
 
-### Step 2 - Crea il Codespace
+## Prerequisiti
 
-**Dal tuo fork** (`github.com/TUO-USERNAME/sacmi-claudecode-workshop`):
-1. Click sul pulsante verde **"Code"**.
-2. Tab **"Codespaces"** => click sui tre puntini => "New with options...".
+Il workshop assume che questi strumenti siano già installati. Verificali prima di iniziare:
 
-Si apre la pagina **"Create codespace"** di GitHub.
+| Strumento | Perché serve | Verifica |
+|---|---|---|
+| Git | clonare il repo, M5 | `git --version` |
+| Account Anthropic attivo | tutti i moduli | login al primo avvio di Claude Code |
+| **Claude Code CLI** (`claude`) | tutti i moduli se usi la CLI; comandi `claude plugin ...` in M4/M5 anche se usi l'estensione | `claude --version` |
+| VS Code (≥ 1.94) + estensione **Claude Code** | solo se segui il workshop dall'estensione | icona ✱ (Spark) in alto a destra dell'editor |
+| Node.js 20+ | starter TypeScript **e** plugin episodic-memory (M4) | `node --version` |
+| .NET 10 SDK **oppure** Python 3.11+ | solo se scegli lo starter .NET o Python | `dotnet --version` / `python3 --version` |
+| `jq` (macOS/Linux) oppure PowerShell 7+ (Windows) | script degli hook in M3/M5 | `jq --version` / `pwsh --version` |
+| **tokensave** | M4 | `tokensave --version` |
 
-### Step 3 - Configura il Codespace
+> Installazione della CLI di Claude Code: [code.claude.com/docs/en/setup](https://code.claude.com/docs/en/setup). L'estensione VS Code non aggiunge `claude` al `PATH`, serve l'installazione separata.
+>
+> Installazione di tokensave ([tokensave.dev](https://tokensave.dev/)): 
+<br/>- `brew install aovestdipaperino/tap/tokensave` (macOS) 
+<br/>- `scoop bucket add tokensave https://github.com/aovestdipaperino/scoop-aovestdipaperino && scoop install tokensave` (Windows) 
+<br/>- `cargo install tokensave` (richiede Rust).
+<br/>- In alternativa, qui sono presenti i binari precompilati per macOS, Windows e Linux: [tokensave.dev/releases](https://github.com/aovestdipaperino/tokensave/releases/).
 
-Nella pagina di creazione lascia invariati:
-- **Branch**: `main`
-- **Region**: `Europe West`
-- **Machine type**: `2-core`
-- ⚠️ **Dev container configuration**: scegli una voce in base al linguaggio che preferisci usare
+## Setup
 
-| Opzione nel dropdown | Scegli se vuoi… |
-|---|---|
-| `Workshop · .NET 10` | seguire con lo starter ASP.NET Core Minimal API |
-| `Workshop · TypeScript (Node 20)` | seguire con lo starter Hono (TS) |
-| `Workshop · Python 3.11` | seguire con lo starter FastAPI |
-
-> 🚫 **NON scegliere `Default project configuration`**: è l'opzione fallback di GitHub che usa un'immagine generica senza la pre-installazione di Claude Code, MCP server e dipendenze del workshop. Ogni devcontainer dedicato installa solo l'SDK del suo linguaggio.
-
-Click **"Create codespace"** in basso a destra.
-
-Attendere qualche minuto per la creazione e l'inizializzazione del Codespace. Al termine nel tab `Terminale` dovresti vedere il messaggio `==> Done. Open modules/M1-istruzioni/README.md to start.`.
-
-### Step 4 - Avvio MCP server (Context7)
-Il server MCP Context7 potrebbe non partire automaticamente al primo avvio del Codespace.
-
-Digita `/mcp` nel pannello Claude Code per gestire i server: seleziona `context7` e approvalo quando richiesto.
-
-### Step 5 - Cambio lingua della UI
-Per cambiare la lingua della UI di VS Code (menu, notifiche, ecc.):
-1. Command Palette => `Configure Display Language`
-2. Scegli la lingua preferita (es. `english`)
-
-### Step 6 - Accedi all'estensione Claude Code nel Codespace
-Apri il pannello Claude Code (icona ✱ nella barra in alto a destra dell'editor, oppure dalla Activity Bar a sinistra) e accedi con il tuo account Anthropic quando richiesto.
-
-### Step 7 - (Consigliato) Attiva episodic-memory prima di iniziare
-
-Nel modulo **M4 (Contesto & Memoria)** userai l'**episodic memory**, che cerca nelle tue **conversazioni passate**. Perché in M4 ci sia uno storico da interrogare, conviene attivarla **ora, prima di M1**, così le sessioni di M1-M3 vengono indicizzate man mano. Nel pannello Claude Code:
-
-```
-/plugin marketplace add obra/superpowers-marketplace
-/plugin install episodic-memory@superpowers-marketplace
-```
-
-Il plugin registra da sé un hook `SessionStart` che mantiene aggiornato l'indice. (tokensave, l'altro strumento di M4, è già installato **e registrato** dal devcontainer via `tokensave install`; in M4 ti resta solo `tokensave init`.) Dettagli in [`modules/M4-contesto-memoria/README.md`](modules/M4-contesto-memoria/README.md).
-
-## Setup locale
-
-Se non puoi usare GitHub Codespaces, puoi seguire il workshop in locale.
-
-### Step 1 - Prerequisiti software
-
-| Tool | Note |
-|---|---|
-| Git | per clonare il repo |
-| VS Code (≥ 1.110) | per agent mode e plugin support |
-| Estensione **Claude Code** | richiede un account Anthropic attivo |
-| Node.js 20+ | richiesto **solo se scegli lo starter TypeScript**. Context7 ora è un endpoint HTTP hosted, non più un processo locale |
-| **Uno** tra .NET 10 SDK / Python 3.11+ | solo per il linguaggio di starter che scegli (TypeScript usa già Node) |
-| `jq` (Unix) o PowerShell 7+ (Windows) | necessario per gli hook script in M3/M5 |
-
-### Step 2 - Passi setup
+### Step 1 - Clona il repository
 
 ```bash
-# 1. Clone del repo
-git clone https://github.com/<owner>/<repo>.git
-cd <repo>
-
-# 2. Apri il workspace in VS Code
-code .
-
-# 3. Verifica Claude Code attivo (icona ✱ nella barra in alto a destra in VS Code)
-
-# 4. Restore dipendenze per il tuo linguaggio
-#    Solo per il modulo che inizi, non per tutti:
-
-# .NET
-cd modules/M1-istruzioni/starters/dotnet && dotnet restore && cd -
-
-# TypeScript
-cd modules/M1-istruzioni/starters/typescript && npm install && cd -
-
-# Python (con venv consigliato)
-cd modules/M1-istruzioni/starters/python
-python3 -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-cd -
+git clone https://github.com/BlexinSrl/sacmi-claudecode-workshop.git
+cd sacmi-claudecode-workshop
 ```
 
-### Step 3 - Verifica che lo starter giri
+> ⚠️ **Claude Code deve lavorare sempre dal root del repo.** Claude Code cerca `CLAUDE.md/AGENTS.md` e `.claude/` nella cartella da cui parte: se lo avvii da una sottocartella, skill, subagent e hook che crei non vengono caricati.
+> - **Estensione VS Code**: apri il root con `code .` e tienilo come workspace per tutto il workshop. Apri i README dei moduli come **file** (Explorer oppure `Cmd/Ctrl+P`), **non** con `File => Open Folder` sulla cartella del modulo.
+> - **CLI**: lancia `claude` sempre dal root del repo, non dalla cartella dello starter. Per i comandi di build e test usa un secondo terminale.
 
-Per testare che lo starter funzioni prima di iniziare i moduli:
+### Step 2 - Avvia Claude Code ed effettua il login
+
+- **Estensione VS Code**: apri un file qualsiasi e clicca l'icona ✱ nella barra in alto a destra dell'editor.
+- **CLI**: dal root del repo esegui `claude`.
+
+Al primo avvio accedi con il tuo account Anthropic (nella CLI, se non parte da solo, digita `/login`) e, se richiesto, conferma che ti fidi della cartella.
+
+**Risultato atteso**: Claude Code accetta un prompt. Prova con *"Riassumimi in 3 righe cosa contiene questo repository"*: la risposta cita il workshop e i moduli M1-M5 (Claude Code ha letto il `CLAUDE.md` del root).
+
+### Step 3 - Prepara lo starter del tuo linguaggio
+
+In ogni modulo lavori nella cartella `modules/<modulo>/starters/<linguaggio>/`. Ogni modulo ha la sua copia dello starter, quindi **all'inizio di ogni modulo** esegui la preparazione nella cartella di quel modulo. Per M1:
 
 ```bash
 # .NET
 cd modules/M1-istruzioni/starters/dotnet
-dotnet test Tasks.Tests
-dotnet run            # => server su http://localhost:5000
+dotnet restore
+dotnet test Tasks.Tests        # => Passed: 2
 
 # TypeScript
 cd modules/M1-istruzioni/starters/typescript
-npm test              # => 2 test passano
-npm run dev           # => server su http://localhost:3000
+npm install
+npm test                       # => Tests 2 passed (2)
 
 # Python
 cd modules/M1-istruzioni/starters/python
-source .venv/bin/activate
-pytest                # => 2 test passano
-uvicorn app.main:app  # => server su http://localhost:8000
+python3 -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+pytest                         # => 2 passed
 ```
 
-### Step 4 - Configurazione MCP server (Context7) in locale
+Per gli altri moduli sostituisci `M1-istruzioni` con la cartella del modulo (es. `M2-capacita`). Gli starter da M2 in poi partono con 6 test.
 
-Il repo contiene già `.mcp.json` al root del workspace, configurato per usare l'endpoint HTTP hosted di Context7 (`https://mcp.context7.com/mcp`).
+> ⚠️ **.NET**: lancia sempre `dotnet test Tasks.Tests`. Un `dotnet test` senza argomenti prende il progetto della web app, non esegue nessun test ed esce comunque con successo.
+>
+> **Python**: quando Claude esegue i test lancia i comandi in una shell propria, dove il venv potrebbe non essere attivo. Se vedi `pytest: command not found`, chiedigli di usare `.venv/bin/pytest` (Windows: `.venv\Scripts\pytest`).
 
-Claude Code lo rileva all'apertura del workspace e ti chiede l'approvazione del server: accetta quando richiesto. Per gestirlo, digita `/mcp` nel pannello Claude Code. Non serve Node.js: l'endpoint è HTTP hosted.
+### Step 4 - Approva il server MCP Context7
 
-```json
-{
-  "mcpServers": {
-    "context7": { "type": "http", "url": "https://mcp.context7.com/mcp" }
-  }
-}
+Il repo contiene già `.mcp.json` al root, che registra il server MCP **Context7** (endpoint HTTP hosted, non serve installare nulla). All'apertura del workspace Claude Code può chiederti di approvarlo: accetta.
+
+**Verifica**: digita `/mcp` in Claude Code. `context7` deve risultare connesso; se è disabilitato o in attesa di approvazione, selezionalo e abilitalo. Lo userai in M2.
+
+### Step 5 - Registra tokensave (per M4)
+
+Dal terminale, una sola volta:
+
+```bash
+tokensave install --agent claude
 ```
 
-### Step 5 - (Consigliato) Strumenti del modulo M4 in locale
+Il comando registra il server MCP di tokensave nella tua configurazione utente di Claude Code (`~/.claude.json`, non nel repo) e aggiunge delle regole che invitano Claude a usarlo prima di leggere i files. L'indicizzazione del progetto (`tokensave init`) la farai durante M4.
 
-In locale gli strumenti di **M4 (Contesto & Memoria)** non vengono installati automaticamente (niente devcontainer), quindi predisponili a mano:
+### Step 6 - Installa il plugin episodic-memory (consigliato, per M4)
 
-- **Episodic memory** (ricerca nelle conversazioni passate): attivala **prima di iniziare M1**, così le sessioni di M1-M3 vengono indicizzate. Nel pannello Claude Code:
-  ```
-  /plugin marketplace add obra/superpowers-marketplace
-  /plugin install episodic-memory@superpowers-marketplace
-  ```
-- **tokensave**: tre passi ([tokensave.dev](https://tokensave.dev/)). 
-> ```bash
-> cargo install tokensave                        # 1) installa il binario (qualsiasi piattaforma)
-> tokensave install                              # 2) registra il server MCP + prompt rules (una volta)
-> ```
-L'indicizzazione del progetto la fai durante M4.
+In M4 userai l'**episodic memory**, che cerca nelle tue **conversazioni passate**. Perché in M4 ci sia uno storico da interrogare, installala **ora**, così le sessioni di M1-M3 vengono indicizzate man mano. Dal terminale:
 
-Approfondimenti in [`modules/M4-contesto-memoria/README.md`](modules/M4-contesto-memoria/README.md).
+```bash
+claude plugin marketplace add obra/superpowers-marketplace
+claude plugin install episodic-memory@superpowers-marketplace
+```
+
+In alternativa puoi farlo dall'interfaccia di gestione dei plugin: `/plugins` nell'estensione VS Code (**Manage plugins**), `/plugin` nella CLI. Aggiungi il marketplace `obra/superpowers-marketplace`, poi installa `episodic-memory`.
+
+**Verifica**: `claude plugin list` mostra `episodic-memory@superpowers-marketplace` abilitato. Apri una **nuova conversazione** per caricare il plugin.
 
 ## Iniziamo! 🚀
 
-> ⚠️ **Importante - non cambiare il workspace root**
->
-> Il workspace VS Code deve **rimanere il root del repo** per tutto il workshop. Apri i README dei moduli come **file** (Explorer sidebar oppure `Cmd/Ctrl+P` => digita il path), **NON** con `File => Open Folder` sulla cartella del modulo.
->
-> Perché: tutte le customizations Claude Code che creerai vivono in `.claude/` (skill, subagent, hook, `settings.json`) e in `plugins/` al **root del workspace**, con `CLAUDE.md` al root come contratto del repo. Se cambi workspace finiscono nel posto sbagliato e Claude Code non le carica.
->
-> Suggerimento UX: con il README aperto, premi `Cmd+Shift+V` (macOS) o `Ctrl+Shift+V` (Win/Linux) per il preview Markdown formattato.
+Apri [`modules/M1-istruzioni/README.md`](modules/M1-istruzioni/README.md) e buon workshop!
 
-Apri [`modules/M1-istruzioni/README.md`](modules/M1-istruzioni/README.md) per iniziare dal modulo 1 e buona workshop! 🚀
+### Estensione VS Code o CLI
+
+I comandi che iniziano con `/` (`/mcp`, `/hooks`, `/agents`, `/memory`...) e le @-mention si usano allo stesso modo in entrambe le interfacce. Cambiano solo queste operazioni:
+
+| Operazione | Estensione VS Code | CLI |
+|---|---|---|
+| Avviare Claude Code | icona ✱ con il root del repo aperto | `claude` dal root del repo |
+| Nuova conversazione | pulsante per una nuova conversazione nel pannello | `/clear`, oppure esci e rilancia `claude` |
+| Tornare a un checkpoint (M4) | pulsante di rewind sul messaggio | `Esc Esc` oppure `/rewind` |
+| Gestire i plugin (M5) | `/plugins` | `/plugin` |
+| Vedere le modifiche ai file | diff nell'editor | diff nel terminale (o `git diff`) |
+
+Quando un modulo dice "apri una **nuova conversazione**", serve a far caricare a Claude Code i file appena creati (skill, subagent, hook, memorie) e a partire con un contesto pulito.
+
+### Convenzioni usate nei moduli
+
+- I **prompt da incollare** in Claude Code sono introdotti da *"Chiedi:"* o *"Invia:"* e formattati come citazione.
+- `<linguaggio>` va sostituito con `dotnet`, `typescript` o `python`.
+- `@modules/...` nel prompt è una **@-mention**: digitando `@` Claude Code propone file e cartelle da allegare al contesto.
+- Ogni modulo ha una cartella `solution/` con lo stato finale di riferimento. **Non modificarla**: se ti blocchi, copia da lì.

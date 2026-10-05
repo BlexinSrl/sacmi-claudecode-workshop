@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 # SubagentStart hook (Claude Code, PowerShell): inietta lo schema del DB nel contesto del subagente.
 #
-# Registrato in .claude/settings.json con matcher "dba": gira solo quando parte il subagent dba.
+# Registrato in hooks/hooks.json del plugin con matcher "^workshop-dev-kit:dba$": gira solo quando parte il subagent dba del plugin.
 # Output contract: stdout JSON con hookSpecificOutput.additionalContext.
 # Exit 0 = allow; il testo in additionalContext viene aggiunto al contesto del subagente.
 

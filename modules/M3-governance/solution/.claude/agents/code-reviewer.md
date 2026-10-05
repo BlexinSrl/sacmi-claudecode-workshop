@@ -1,7 +1,7 @@
 ---
 name: code-reviewer
 description: Specialized subagent for code review. Invoke when you want a structured review of a file or function for correctness, security, CLAUDE.md compliance, and test coverage.
-tools: Read, Grep, Glob, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+tools: Read, Grep, Glob, mcp__context7__resolve-library-id, mcp__context7__query-docs
 model: sonnet
 ---
 

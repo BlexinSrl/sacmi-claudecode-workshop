@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SubagentStart hook (Claude Code): inietta lo schema del DB nel contesto del subagente.
 #
-# Registrato in .claude/settings.json con matcher "dba": gira solo quando parte il subagent dba.
+# Registrato in hooks/hooks.json del plugin con matcher "^workshop-dev-kit:dba$": gira solo quando parte il subagent dba del plugin.
 # Input contract: legge da stdin un JSON con i campi della sessione (session_id, cwd, ...).
 # Output contract: stdout JSON con hookSpecificOutput.additionalContext (evento "Context only").
 # Exit 0 = allow; il testo in additionalContext viene aggiunto al contesto del subagente.
@@ -15,7 +15,7 @@ if [ ! -f "$SCHEMA_FILE" ]; then
   exit 0
 fi
 
-# Il matcher "dba" in settings.json garantisce che questo hook giri solo per il subagent dba,
+# Il matcher in hooks/hooks.json garantisce che questo hook giri solo per il subagent dba,
 # quindi qui iniettiamo sempre lo schema senza dover ispezionare il tipo di agente.
 SCHEMA_BODY=$(cat "$SCHEMA_FILE")
 CONTEXT_MSG=$(printf 'Schema corrente del database applicativo (fonte di verità, iniettato dal SubagentStart hook):\n\n```sql\n%s\n```\n\nUsa esclusivamente nomi di tabella e colonne presenti qui sopra. Se la richiesta non è soddisfacibile con questo schema, dillo esplicitamente.' "$SCHEMA_BODY")

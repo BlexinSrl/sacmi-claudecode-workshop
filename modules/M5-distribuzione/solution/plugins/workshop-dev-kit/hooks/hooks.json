@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "SubagentStart": [
+      {
+        "matcher": "^workshop-dev-kit:dba$",
+        "hooks": [
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/subagent-start.sh\"", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}

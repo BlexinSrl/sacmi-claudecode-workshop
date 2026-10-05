@@ -5,11 +5,11 @@ metadata:
   type: project
 ---
 
-## Codici di stato HTTP — Task API
+## Codici di stato HTTP - Task API
 
 | Operazione | Successo | Errore | Note |
 |-----------|----------|--------|------|
-| GET (lista) | **200 OK** | — | Lista vuota => `[]` con 200, non 404 |
+| GET (lista) | **200 OK** | - | Lista vuota => `[]` con 200, non 404 |
 | POST (create) | **201 Created** + header `Location: /tasks/:id` | **400 Bad Request** | Includere sempre `Location` verso la nuova risorsa |
 | PATCH (update status) | **200 OK** | **404 Not Found**, **400 Bad Request** | Aggiorna solo `status`; valore non `todo`/`done` => 400 |
 | PUT (replace) | **200 OK** | **404 Not Found**, **400 Bad Request** | Replace = `title` e `status` entrambi obbligatori |
@@ -21,4 +21,4 @@ metadata:
 
 **How to apply:** quando aggiungi un endpoint, scegli il codice dalla tabella (200 per read/update, 201+Location per create, 204 per delete) e copri nei test sia l'happy-path sia ogni error case.
 
-[[task-api-validation]] — correlata: formato del body d'errore 400.
+[[task-api-validation]] - correlata: formato del body d'errore 400.
