@@ -45,42 +45,9 @@ Il workshop si svolge in locale con Claude Code, a scelta tra estensione VS Code
 
 I comandi si eseguono **dentro la cartella `starters/` (o `solution/`) del modulo e linguaggio scelto**, es. `modules/M1-istruzioni/starters/dotnet/`. La working directory conta: gli stessi comandi lanciati dal root non trovano il progetto. Non c'è un linter/formatter configurato - `dotnet build` / `tsc` fanno da type-check.
 
-### .NET 10
-```bash
-dotnet restore
-dotnet build                                                     # compile / type-check
-dotnet test Tasks.Tests                                          # ⚠️ indica SEMPRE il progetto di test
-dotnet test Tasks.Tests --filter "FullyQualifiedName~GetTasks"   # singolo test (match sul nome)
-dotnet run                                                       # server su http://localhost:5000
-```
-> ⚠️ `dotnet test` "nudo" da questa cartella prende `TaskApi.csproj` (la web app, senza test) ed esce **0 senza eseguire nulla** → falso verde. Passa sempre `Tasks.Tests`.
-
-### TypeScript (Node 20)
-```bash
-npm install
-npm run build                                # tsc (type-check)
-npm test                                     # vitest run - tutti i test
-npx vitest run src/tasks/routes.test.ts      # singolo file
-npx vitest run -t "creates"                  # singolo test per nome
-npm run dev                                  # server su http://localhost:3000 (tsx watch)
-```
-
-### Python 3.11
-```bash
-python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-pytest                                               # tutti i test
-pytest tests/test_tasks.py::test_get_tasks_returns_empty_initially   # singolo test
-uvicorn app.main:app                                 # server su http://localhost:8000
-```
-
 ## Convenzioni cross-linguaggio
 
 - **Lingua**: italiano per testi rivolti ai partecipanti (README, doc, hint). Inglese per nomi file, codice, branch, commit message, skill/agent content.
-- **Naming endpoint**: kebab-case nei path (`/tasks/stats`, non `/taskStats`).
-- **Validazione input**: invalido => 400 con body `{ "error": "<messaggio>" }`.
-- **Status code**: 200 GET, 201 POST con Location header, 200 PATCH, 204 No Content (DELETE), 404 not found, 400 validation error.
-- **Test obbligatorio**: ogni endpoint ha 1 happy-path + 1 error case.
 
 ## Vincoli
 
