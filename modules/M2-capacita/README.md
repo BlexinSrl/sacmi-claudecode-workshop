@@ -40,7 +40,7 @@ model: sonnet
 ---
 ```
 
-- `name`: identificatore del subagent. In chat lo richiami con `@agent-<name>` (es. `@agent-code-reviewer`).
+- `name`: identificatore del subagent. In chat lo richiami per nome (es. *"usa il subagent code-reviewer per ..."*).
 - `description`: criterio con cui l'agente principale decide a quale subagent delegare, se non lo indichi tu esplicitamente.
 - `tools`: **allowlist** dei tool che il subagent può usare (principio del minimo privilegio: un reviewer non ha bisogno di `Edit`/`Write`). Se ometti il campo, il subagent eredita tutti i tool.
 - `model`: opzionale, il modello da usare per il subagent (`sonnet`, `opus`, `haiku` o `inherit`).
@@ -75,7 +75,7 @@ Il server è già configurato nel file `.mcp.json` al root del repo:
 
 In una nuova conversazione chiedi:
 
-> Nel progetto `@modules/M2-capacita/starters/<linguaggio>` verifica che l'handler di `POST /tasks` usi l'API attuale della libreria del mio starter (FastAPI / Hono / ASP.NET Core). Usa Context7 per recuperare la documentazione più recente e dimmi se ci sono pattern più moderni per la validazione.
+> Nel progetto `@modules/M2-capacita/starters/<linguaggio>` verifica che l'handler di `POST /tasks` usi l'API attuale della libreria del mio starter (FastAPI / Hono / ASP.NET Core). Usa Context7 per recuperare la documentazione più recente e dimmi se ci sono pattern più moderni per la validazione. Al termine forniscimi un report e non modificare il codice.
 
 **Risultato atteso**: nel flusso della risposta compaiono le chiamate ai tool `resolve-library-id` e `query-docs` di Context7 (approva quando Claude chiede il permesso). La risposta confronta il codice dello starter con la documentazione recuperata. Non serve applicare i suggerimenti.
 
@@ -88,7 +88,7 @@ Crea il file `.claude/agents/code-reviewer.md` **al root del repository** con qu
 name: code-reviewer
 description: Specialized subagent for code review. Invoke when you want a structured review of a file or function for correctness, security, CLAUDE.md compliance, and test coverage.
 tools: Read, Grep, Glob, mcp__context7__resolve-library-id, mcp__context7__query-docs
-model: sonnet
+model: opus
 ---
 
 # Code Reviewer Subagent
@@ -101,20 +101,20 @@ You are a rigorous but constructive code reviewer. Your output is a structured r
 2. **Read the file under review** and closely related files (tests, store, helpers).
 3. **Return a structured output** in these five sections:
 
-   ### Correctness
-   Obvious bugs, unhandled edge cases, race conditions, off-by-one errors.
+  ### Correctness
+    Obvious bugs, unhandled edge cases, race conditions, off-by-one errors.
 
-   ### Security
-   Unvalidated input, data leaks, missing authorization, outdated dependencies.
+  ### Security
+    Unvalidated input, data leaks, missing authorization, outdated dependencies.
 
-   ### CLAUDE.md compliance
-   Places where the code violates the conventions stated in CLAUDE.md (naming, error format, status codes). Cite the specific rule.
+  ### CLAUDE.md compliance
+    Places where the code violates the conventions stated in CLAUDE.md (naming, error format, status codes). Cite the specific rule.
 
-   ### Test coverage
-   Cases not covered by existing tests. Suggest which tests are missing.
+  ### Test coverage
+    Cases not covered by existing tests. Suggest which tests are missing.
 
-   ### Suggested fixes
-   For each problem identified, propose a concrete fix (code snippet when applicable).
+  ### Suggested fixes
+    For each problem identified, propose a concrete fix (code snippet when applicable).
 
 ## How you operate
 
@@ -126,28 +126,20 @@ You are a rigorous but constructive code reviewer. Your output is a structured r
 
 Nota l'allowlist dei tool: nessun `Edit`/`Write`, solo lettura e ricerca (`Read, Grep, Glob`) più i due tool di Context7, che il subagent può usare per verificare le API aggiornate delle librerie. Il subagent non può modificare il codice: può solo suggerire.
 
-**Checkpoint**: apri una **nuova conversazione** e digita `/agents`, oppure digita `@` nel prompt: `code-reviewer` deve comparire tra gli agenti disponibili.
+**Checkpoint**: se la cartella `.claude/agents/` non esisteva prima di questo step, **riavvia Claude Code** (esci e rilancia `claude`): il primo agente di una nuova cartella `agents` viene caricato solo al riavvio, mentre le modifiche successive al file vengono rilevate in automatico. Poi chiedi a Claude *"quali subagent hai a disposizione?"*: `code-reviewer` deve comparire nell'elenco.
 
 ### Step 3 - Invoca il subagent `code-reviewer`
 
-Nel prompt digita `@`, scegli `code-reviewer` dal menu (viene inserito come `@agent-code-reviewer`) e completa la richiesta indicando il file del tuo linguaggio (`Tasks/TasksEndpoints.cs`, `src/tasks/routes.ts` o `app/main.py`):
+Chiedi a Claude di usare il subagent nominandolo, e indica il file del tuo linguaggio (`Tasks/TasksEndpoints.cs`, `src/tasks/routes.ts` o `app/main.py`):
 
-> @agent-code-reviewer revisiona il file degli endpoint dei task nel progetto `@modules/M2-capacita/starters/<linguaggio>` per correttezza, sicurezza e conformità a CLAUDE.md.
+> Usa il subagent code-reviewer per revisionare il file degli endpoint dei task nel progetto `@modules/M2-capacita/starters/<linguaggio>` per correttezza, sicurezza e conformità a CLAUDE.md.
 
 **Risultato atteso**:
 - nella chat compare l'esecuzione del subagent `code-reviewer`, separata dalla conversazione principale;
 - l'output è strutturato nelle 5 sezioni definite nel file (Correctness, Security, CLAUDE.md compliance, Test coverage, Suggested fixes);
 - **nessun file viene modificato**: il subagent non ha i tool per farlo.
 
-In alternativa puoi descrivere il task senza `@agent-...` (es. *"fai una code review di ..."*) e lasciare che sia Claude a delegare al subagent in base alla sua `description`.
-
-### Step 4 (opzionale) - Applica i suggerimenti
-
-Chiedi all'agente principale di applicare i fix proposti, ad esempio:
-
-> Aggiungi i test mancanti suggeriti dal code-reviewer e verifica che passino.
-
-**Risultato atteso**: è l'agente principale (non il subagent) a modificare i file. Nella solution di riferimento questo passo porta i test da 6 a 10.
+In alternativa puoi descrivere il task senza nominare il subagent (es. *"fai una code review di ..."*) e lasciare che sia Claude a delegare al subagent in base alla sua `description`.
 
 ## Wrap
 
@@ -157,7 +149,7 @@ Chiedi all'agente principale di applicare i fix proposti, ad esempio:
 ## Problemi?
 
 - **`context7` non connesso**: digita `/mcp`, abilita il server e riprova in una nuova conversazione. L'endpoint è pubblico, ma richiede connessione a internet.
-- **`code-reviewer` non compare con `@`**: verifica che il file sia in `.claude/agents/` al root del repo (non nello starter) e apri una nuova conversazione.
+- **Claude non vede il subagent `code-reviewer`**: verifica che il file sia in `.claude/agents/` al root del repo (non nello starter) e riavvia Claude Code: il primo agente in una nuova cartella `.claude/agents/` viene caricato solo al riavvio.
 - Subagent di riferimento: `modules/M2-capacita/solution/.claude/agents/code-reviewer.md`, da copiare in `.claude/agents/` al root del repo.
 
 ➡️ Prossimo modulo: [`../M3-governance/README.md`](../M3-governance/README.md)

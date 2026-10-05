@@ -57,6 +57,14 @@ I comandi si eseguono **dentro la cartella `starters/` (o `solution/`) del modul
 - NON modificare file in `modules/Mn/solution/` durante un modulo - sono reference per chi si blocca, da copiare al root se necessario.
 - NON commitare `.env`, `audit.log`, file in `secrets/`, file `.key`/`.pem`.
 
+## Delega ai subagent
+
+Quando deleghi a un subagent con un file di definizione (es. `.claude/agents/code-reviewer.md`), il formato di output scritto nella definizione è il contratto. Leggi la definizione prima di scrivere il prompt.
+
+- Il prompt di delega dice solo **cosa** fare (file target, perimetro, esclusioni specifiche del progetto). NON aggiungere né cambiare il formato di output (es. "ordina per gravità", "metti prima i finding"): sovrascrive quello prescritto dalla definizione.
+- Quando il subagent risponde, riporta il report **nel formato della definizione** (stesse sezioni, stesso ordine). Puoi tradurlo, ma non riorganizzarlo in una tabella o in un riassunto tuo.
+- I tuoi commenti (verifiche, avvertenze, prossimi passi) vanno dopo il report, separati.
+
 ## Dove trovare cosa
 
 - `modules/Mn/README.md` - istruzioni del modulo n (M1, M2, M3, M4, M5).

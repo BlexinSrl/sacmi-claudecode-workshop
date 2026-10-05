@@ -125,7 +125,7 @@ Apri [`modules/M1-istruzioni/README.md`](modules/M1-istruzioni/README.md) e buon
 
 ### Estensione VS Code o CLI
 
-I comandi che iniziano con `/` (`/mcp`, `/hooks`, `/agents`, `/memory`...) e le @-mention si usano allo stesso modo in entrambe le interfacce. Cambiano solo queste operazioni:
+I comandi che iniziano con `/` (`/mcp`, `/hooks`, `/memory`...) e le @-mention di file e cartelle si usano allo stesso modo in entrambe le interfacce. Cambiano solo queste operazioni:
 
 | Operazione | Estensione VS Code | CLI |
 |---|---|---|
