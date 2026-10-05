@@ -25,7 +25,9 @@ L'elenco completo è nella [documentazione degli hook](https://code.claude.com/d
 
 L'hook riceve su stdin un JSON con i dati dell'evento, può fare qualsiasi cosa (leggere file, interrogare un servizio) e comunica con Claude Code in due modi:
 
-- **Exit code**: `0` = tutto ok. `2` = errore bloccante: per gli eventi che lo prevedono (es. `PreToolUse`) l'azione viene bloccata e lo stderr viene mostrato a Claude come motivo. Altri codici sono errori non bloccanti.
+- **Exit code**: 
+  - `0` = tutto ok. 
+  - `2` = errore bloccante: per gli eventi che lo prevedono (es. `PreToolUse`) l'azione viene bloccata e lo stderr viene mostrato a Claude come motivo. Altri codici sono errori non bloccanti.
 - **JSON su stdout**: alcuni eventi (es. `SessionStart`, `SubagentStart`, `PostToolUse`) accettano un campo `hookSpecificOutput.additionalContext`, il cui testo viene **aggiunto al contesto dell'agente**.
 
 In questo modulo usiamo la seconda modalità: l'hook non blocca, ma *parla* all'agente.
@@ -73,25 +75,7 @@ Cosa hai copiato:
 
 **Checkpoint**: nel root del repo esistono `.claude/context/`, `.claude/agents/` (con `code-reviewer.md` di M2 e `dba.md`) e `.claude/hooks/`.
 
-### Step 2 - Guarda lo schema e lo script
-
-Apri `.claude/context/db-schema.sql`. Nella tabella `tasks` c'è la colonna `test_audit_seal`: è una **canary column**, un nome inventato che nessun LLM può conoscere. La useremo per dimostrare che l'iniezione funziona: se il subagent la nomina, può averla vista solo tramite l'hook.
-
-Apri `.claude/hooks/subagent-start.sh`. La logica è semplice:
-
-1. legge `../context/db-schema.sql` (relativo alla cartella dello script);
-2. stampa su stdout il JSON `{"hookSpecificOutput": {"hookEventName": "SubagentStart", "additionalContext": "...lo schema..."}}`.
-
-Non serve controllare quale subagent sta partendo: il filtro lo fa il `matcher` che configuri nel prossimo step. `SubagentStart` aggiunge il contesto **solo al subagent appena avviato**: la sessione principale non viene appesantita.
-
-Puoi provare lo script da solo, dal root del repo:
-
-```bash
-echo '{}' | bash .claude/hooks/subagent-start.sh | jq -r .hookSpecificOutput.hookEventName
-# => SubagentStart
-```
-
-### Step 3 - Registra l'hook in `.claude/settings.json`
+### Step 2 - Registra l'hook in `.claude/settings.json`
 
 Crea il file `.claude/settings.json` al root del repo (se esiste già, aggiungi solo la chiave `hooks`):
 
@@ -119,6 +103,17 @@ Su **Windows** usa lo script PowerShell:
 { "type": "command", "command": "pwsh -NoProfile -File \"${CLAUDE_PROJECT_DIR}/.claude/hooks/subagent-start.ps1\"", "timeout": 10 }
 ```
 
+### Step 3 - Guarda lo schema e lo script
+
+Apri `.claude/context/db-schema.sql`. Nella tabella `tasks` c'è la colonna `test_audit_seal`: è una **canary column**, un nome inventato che nessun LLM può conoscere. La useremo per dimostrare che l'iniezione funziona: se il subagent la nomina, può averla vista solo tramite l'hook.
+
+Apri `.claude/hooks/subagent-start.sh`. La logica è semplice:
+
+1. legge `../context/db-schema.sql` (relativo alla cartella dello script);
+2. stampa su stdout il JSON `{"hookSpecificOutput": {"hookEventName": "SubagentStart", "additionalContext": "...lo schema..."}}`.
+
+Non serve controllare quale subagent sta partendo: il filtro lo fa la proprietà `matcher`. `SubagentStart` aggiunge il contesto **solo al subagent appena avviato**: la sessione principale non viene appesantita.
+
 **Checkpoint**: apri una **nuova conversazione**, poi:
 - digita `/hooks` (nell'estensione VS Code anche dal menu `/` => **Hooks**): deve comparire un hook `SubagentStart` con matcher `dba`;
 - digita `@`: tra gli agenti deve comparire `dba`.
@@ -128,8 +123,6 @@ Su **Windows** usa lo script PowerShell:
 Chiedi:
 
 > Usando il subagent dba, elencami tutte le colonne della tabella `tasks` esattamente come sono nello schema attuale, una per riga, senza commenti.
-
-In alternativa invoca direttamente il subagent con `@agent-dba` seguito dalla domanda.
 
 **Risultato atteso**: una lista di 9 colonne **che include `test_audit_seal`**.
 
