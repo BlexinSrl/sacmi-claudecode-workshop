@@ -58,7 +58,7 @@ Ritrovi le cartelle convenzionali:
 
 ### Step 3 - Crea il repo marketplace e assembla il plugin
 
-Crea una cartella **fuori** dal repository del workshop, ad esempio `~/my-workshop-marketplace`. Al suo interno assembli il plugin `workshop-dev-kit` copiando le estensioni che hai creato nel workspace in M1 e M3:
+Crea una cartella **fuori** dal repository del workshop, ad esempio `~/my-workshop-marketplace`. Al suo interno assembli il plugin `workshop-dev-kit` copiando le estensioni che hai creato nei moduli M1, M2 ed M3:
 
 ```
 my-workshop-marketplace/
@@ -133,10 +133,8 @@ Aggiungi al root di `my-workshop-marketplace` l'indice `.claude-plugin/marketpla
 
 ```
 my-workshop-marketplace/
-├── .claude-plugin/
-│   └── marketplace.json                 (indice del marketplace)
-└── plugins/
-    └── workshop-dev-kit/                (il plugin dello Step 3)
+└──.claude-plugin/
+    └── marketplace.json                 (indice del marketplace)
 ```
 
 ```json
@@ -173,7 +171,7 @@ Crea un nuovo repository vuoto su GitHub (es. `my-workshop-marketplace`), poi da
 git init -b main
 git add .
 git commit -m "Add workshop marketplace"
-git remote add origin https://github.com/<tuo-utente>/my-workshop-marketplace.git
+git remote add origin https://github.com/render93/my-workshop-marketplace.git
 git push -u origin main
 ```
 
@@ -181,13 +179,7 @@ git push -u origin main
 
 ### Step 6 - Installa e prova il plugin
 
-Prova il plugin in un progetto **fuori** dal repository del workshop, così le estensioni che vedi arrivano sicuramente dal plugin e non da `.claude/` del workspace. Usa una copia dello starter di M5:
-
-```bash
-# dal root del repo del workshop (scegli il tuo linguaggio)
-cp -r modules/M5-distribuzione/starters/<linguaggio> ~/plugin-test
-cd ~/plugin-test
-```
+Prova il plugin in un progetto **fuori** dal repository del workshop, così le estensioni che vedi arrivano sicuramente dal plugin e non da `.claude/` del workspace.
 
 Registra il marketplace e installa il plugin:
 
@@ -224,4 +216,4 @@ Avvia Claude Code in `~/plugin-test` (estensione: `code ~/plugin-test` e poi ico
 - **Il subagent del plugin non vede lo schema**: controlla il matcher (`^workshop-dev-kit:dba$`) e che `context/db-schema.sql` sia nel plugin.
 - **Riferimenti**: `modules/M5-distribuzione/solution/` è la fotografia del repo marketplace completo (`.claude-plugin/marketplace.json` + `plugins/workshop-dev-kit/`), da copiare nel tuo repo marketplace.
 
-🎉 Hai completato tutti i moduli del workshop! Torna al [README principale](../../README.md).
+🎉 Hai completato tutti i moduli del workshop!
