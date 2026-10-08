@@ -41,83 +41,100 @@ Il workshop assume che questi strumenti siano già installati. Verificali prima 
 
 ## Setup
 
-### Step 1 - Clona il repository
+Segui questi passi in ordine, dopo aver verificato i [prerequisiti](#prerequisiti). **Scegli un solo linguaggio**: .NET, TypeScript oppure Python.
+
+### 1. Clona il repository
+
+Nel terminale:
 
 ```bash
 git clone https://github.com/BlexinSrl/sacmi-claudecode-workshop.git
 cd sacmi-claudecode-workshop
 ```
 
-> ⚠️ **Claude Code deve lavorare sempre dal root del repo.** Claude Code cerca `CLAUDE.md/AGENTS.md` e `.claude/` nella cartella da cui parte: se lo avvii da una sottocartella, skill, subagent e hook che crei non vengono caricati.
-> - **Estensione VS Code**: apri il root con `code .` e tienilo come workspace per tutto il workshop. Apri i README dei moduli come **file** (Explorer oppure `Cmd/Ctrl+P`), **non** con `File => Open Folder` sulla cartella del modulo.
-> - **CLI**: lancia `claude` sempre dal root del repo, non dalla cartella dello starter. Per i comandi di build e test usa un secondo terminale.
+**Questa è la cartella principale del workshop (root).** Avvia sempre Claude Code da qui. In VS Code apri questa cartella con **File → Apri cartella** oppure `code .`; i README dei moduli vanno aperti come file, senza cambiare workspace.
 
-### Step 2 - Avvia Claude Code ed effettua il login
+### 2. Configura gli strumenti per M4
 
-- **Estensione VS Code**: apri un file qualsiasi e clicca l'icona ✱ nella barra in alto a destra dell'editor.
-- **CLI**: dal root del repo esegui `claude`.
-
-Al primo avvio accedi con il tuo account Anthropic (nella CLI, se non parte da solo, digita `/login`) e, se richiesto, conferma che ti fidi della cartella.
-
-**Risultato atteso**: Claude Code accetta un prompt. Prova con *"Riassumimi in 3 righe cosa contiene questo repository"*: la risposta cita il workshop e i moduli M1-M5 (Claude Code ha letto il `CLAUDE.md` del root).
-
-### Step 3 - Prepara lo starter del tuo linguaggio
-
-In ogni modulo lavori nella cartella `modules/<modulo>/starters/<linguaggio>/`. Ogni modulo ha la sua copia dello starter, quindi **all'inizio di ogni modulo** esegui la preparazione nella cartella di quel modulo. Per M1:
-
-```bash
-# .NET
-cd modules/M1-istruzioni/starters/dotnet
-dotnet restore
-dotnet test Tasks.Tests        # => Passed: 2
-
-# TypeScript
-cd modules/M1-istruzioni/starters/typescript
-npm install
-npm test                       # => Tests 2 passed (2)
-
-# Python
-cd modules/M1-istruzioni/starters/python
-python3 -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-pytest                         # => 2 passed
-```
-
-Per gli altri moduli sostituisci `M1-istruzioni` con la cartella del modulo (es. `M2-capacita`). Gli starter da M2 in poi partono con 6 test.
-
-> ⚠️ **.NET**: lancia sempre `dotnet test Tasks.Tests`. Un `dotnet test` senza argomenti prende il progetto della web app, non esegue nessun test ed esce comunque con successo.
->
-> **Python**: quando Claude esegue i test lancia i comandi in una shell propria, dove il venv potrebbe non essere attivo. Se vedi `pytest: command not found`, chiedigli di usare `.venv/bin/pytest` (Windows: `.venv\Scripts\pytest`).
-
-### Step 4 - Approva il server MCP Context7
-
-Il repo contiene già `.mcp.json` al root, che registra il server MCP **Context7** (endpoint HTTP hosted, non serve installare nulla). All'apertura del workspace Claude Code può chiederti di approvarlo: accetta.
-
-**Verifica**: digita `/mcp` in Claude Code. `context7` deve risultare connesso; se è disabilitato o in attesa di approvazione, selezionalo e abilitalo. Lo userai in M2.
-
-### Step 5 - Registra tokensave (per M4)
-
-Dal terminale, una sola volta:
+Nello stesso terminale, esegui una sola volta:
 
 ```bash
 tokensave install --agent claude
 ```
 
-Il comando registra il server MCP di tokensave nella tua configurazione utente di Claude Code (`~/.claude.json`, non nel repo) e aggiunge delle regole che invitano Claude a usarlo prima di leggere i files. L'indicizzazione del progetto (`tokensave init`) la farai durante M4.
+L'indicizzazione con `tokensave init` si farà durante M4.
 
-### Step 6 - Installa il plugin episodic-memory (consigliato, per M4)
-
-In M4 userai l'**episodic memory**, che cerca nelle tue **conversazioni passate**. Perché in M4 ci sia uno storico da interrogare, installala **ora**, così le sessioni di M1-M3 vengono indicizzate man mano. Dal terminale:
+**Consigliato:** installa anche episodic-memory adesso, così raccoglie le conversazioni dei primi moduli:
 
 ```bash
 claude plugin marketplace add obra/superpowers-marketplace
 claude plugin install episodic-memory@superpowers-marketplace
+claude plugin list
 ```
 
-In alternativa puoi farlo dall'interfaccia di gestione dei plugin: `/plugins` nell'estensione VS Code (**Manage plugins**), `/plugin` nella CLI. Aggiungi il marketplace `obra/superpowers-marketplace`, poi installa `episodic-memory`.
+Nell'elenco deve comparire `episodic-memory@superpowers-marketplace` abilitato.
 
-**Verifica**: `claude plugin list` mostra `episodic-memory@superpowers-marketplace` abilitato. Apri una **nuova conversazione** per caricare il plugin.
+### 3. Prepara lo starter: esegui solo il blocco del tuo linguaggio
+
+Apri un **secondo terminale nella cartella principale del repository** e scegli uno dei blocchi qui sotto. Usa questo terminale per build e test.
+
+**.NET**
+
+```bash
+cd modules/M1-istruzioni/starters/dotnet
+dotnet restore
+dotnet test Tasks.Tests
+```
+
+**TypeScript**
+
+```bash
+cd modules/M1-istruzioni/starters/typescript
+npm install
+npm test
+```
+
+**Python — macOS / Linux**
+
+```bash
+cd modules/M1-istruzioni/starters/python
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pytest
+```
+
+**Python — Windows (PowerShell)**
+
+```powershell
+cd modules/M1-istruzioni/starters/python
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+pytest
+```
+
+**Risultato atteso: 2 test superati.** Con .NET usa sempre `dotnet test Tasks.Tests`: senza `Tasks.Tests` il comando può terminare senza eseguire test.
+
+Se Claude non trova `pytest`, chiedigli di usare `.venv/bin/pytest` su macOS/Linux oppure `.venv\Scripts\pytest` su Windows, dalla cartella dello starter.
+
+### 4. Avvia Claude Code e accedi
+
+- **VS Code:** con la cartella principale aperta, apri un file e clicca l'icona ✱ di Claude Code in alto a destra nell'editor.
+- **CLI:** nel **primo terminale**, ancora nella cartella principale, esegui `claude`.
+
+Accedi con il tuo account Anthropic (nella CLI usa `/login` se necessario). Se richiesto, conferma che ti fidi della cartella e approva il server MCP **Context7**, già configurato nel repository.
+
+Se Claude Code era già aperto durante il passo 2, chiudilo e riaprilo per caricare gli strumenti appena installati.
+
+### 5. Controlla di essere pronto
+
+In Claude Code:
+
+1. Digita `/mcp`: `context7` deve risultare **connesso**. Se è disabilitato o in attesa di approvazione, selezionalo e abilitalo.
+2. Invia: *"Riassumimi in 3 righe cosa contiene questo repository"*. La risposta deve riconoscere il workshop e i moduli M1–M5.
+
+**Se lo starter ha superato i 2 test e questi controlli sono riusciti, sei pronto.**
 
 ## Iniziamo! 🚀
 
