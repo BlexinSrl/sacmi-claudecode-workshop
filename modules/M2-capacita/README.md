@@ -1,63 +1,65 @@
 # Modulo M2 - Capacità · Subagents + MCP
 
-> Obiettivo: distinguere due modi indipendenti di estendere un agente. **Subagents**: delega di task con contesto isolato. **MCP**: protocollo standard per esporre nuovi tool e risorse all'agente.
+> Obiettivo: distinguere due modi indipendenti di estendere un agente. **MCP**: protocollo standard per dare all'agente nuovi tool. **Subagents**: delega di un task a un agente specializzato con contesto isolato.
 
 ## Teoria
 
+### MCP (Model Context Protocol)
+
+MCP è uno standard che permette agli agenti AI di usare strumenti e sorgenti dati esterne tramite un'interfaccia comune. Un **MCP server** è un processo, locale o remoto, che implementa il protocollo ed espone uno o più tool. L'agente lo registra e, quando serve, invoca i suoi tool. Lo stesso server può essere riusato da agenti diversi senza modifiche.
+
+**Quando un MCP server porta valore**: quando espone capacità che **non sono già disponibili come CLI standard**. Un MCP che chiama le API di GitHub aggiunge poco rispetto a chiedere all'agente di usare la CLI `gh`.
+
+**Context7** espone *documentazione aggiornata* delle librerie (recuperata via API) tramite due tool: `resolve-library-id` (trova la libreria) e `query-docs` (interroga la sua documentazione). Non esiste un equivalente CLI generico.
+
+In Claude Code i tool di un server MCP hanno un nome nella forma `mcp__<server>__<tool>`, ad esempio `mcp__context7__query-docs`.
+
 ### Subagent
 
-Un subagent è un agente "figlio" invocato dal main agent per gestire un task delimitato. La caratteristica chiave è il **contesto isolato**: il subagent non eredita la cronologia conversazionale del main agent - riceve solo il prompt esplicito che gli si passa.
+Un subagent è un agente "figlio" invocato dall'agente principale per gestire un task delimitato. La caratteristica chiave è il **contesto isolato**: il subagent non eredita la cronologia della conversazione, riceve solo il prompt che gli viene passato.
 
 Conseguenze:
-- **Riduzione del rumore in input**: il subagent non deve discriminare tra istruzioni rilevanti per il suo task e dettagli accumulati nella conversazione precedente. La sua attenzione è concentrata sull'input ricevuto.
-- **Output strutturato verso il main agent**: il main agent riceve un risultato sintetico, non l'intero ragionamento intermedio. Questo limita la crescita del contesto del main agent.
-- **Parallelizzazione**: subagent indipendenti possono essere eseguiti in parallelo. Esempio: lanciare contemporaneamente tre agenti `code-reviewer` su 3 file diversi e poi fare aggregare i risultati dal main agent.
+- **Meno rumore in input**: il subagent non deve distinguere tra istruzioni rilevanti e dettagli accumulati nella conversazione. La sua attenzione è sul task.
+- **Output sintetico verso l'agente principale**: l'agente principale riceve il risultato, non tutto il ragionamento intermedio. Il suo contesto cresce meno.
+- **Parallelizzazione**: subagent indipendenti possono girare in parallelo (es. tre `code-reviewer` su tre file diversi, poi l'agente principale aggrega i risultati).
 
-**Quando usare un subagent**: task ben definito, isolabile, con output verificabile (code review di un file, generazione di test per una funzione, ricerca focalizzata, refactor mirato).
+**Quando usare un subagent**: task ben definito, isolabile, con output verificabile (code review di un file, generazione di test per una funzione, ricerca mirata).
 
-**Quando NON usare un subagent**: conversazione iterativa, esplorazione open-ended, Q&A. In questi casi, il contesto completo è un asset, non un rumore.
+**Quando NON usarlo**: conversazione iterativa, esplorazione aperta, domande e risposte. In questi casi il contesto completo è un vantaggio, non rumore.
 
 #### Anatomia di un subagent
 
-Un subagent è definito in un file `.claude/agents/<nome>.md` con frontmatter YAML:
+Un subagent di progetto è un file `.claude/agents/<nome>.md` con frontmatter YAML:
 
 ```yaml
 ---
 name: code-reviewer
 description: Specialized subagent for code review. Invoke when you want a structured review of a file or function for correctness, security, CLAUDE.md compliance, and test coverage.
-tools: Read, Grep, Glob, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+tools: Read, Grep, Glob, mcp__context7__resolve-library-id, mcp__context7__query-docs
 model: sonnet
 ---
 ```
 
-- `name`: identificatore invocabile (`@code-reviewer` nella chat).
-- `description`: criterio di selezione del subagent da parte del main agent. L'agente principale sceglie quale subagent invocare in base alla descrizione più adatta al task da delegare, se non specificato esplicitamente.
-- `tools`: **allowlist** dei tool che il subagent può usare (principio del minimo privilegio - ad esempio il code-reviewer non ha bisogno di `Edit`/`Write`).
-- `model`: opzionale, per scelta di un modello specifico al subagent. `sonnet` è l'alias idiomatico di Claude Code. 
-
-### MCP (Model Context Protocol)
-
-MCP è uno standard che permette agli agenti AI di interagire con strumenti e sorgenti dati esterne tramite un’interfaccia comune. Un MCP server funge da ponte tra l’agente e i sistemi esterni, traducendo le richieste dell’AI nella logica specifica del tool sottostante, come API, filesystem o servizi custom.
-
-Un MCP server è un processo, locale o remoto, che implementa questo protocollo ed espone una o più capacità utilizzabili dagli agenti. L’agente lo registra come provider di strumenti e, quando necessario, invoca i tool esposti dal server tramite MCP. Grazie a questo approccio, lo stesso MCP server può essere riutilizzato da agenti AI differenti senza dover modificare l’implementazione del server.
-
-**Quando un MCP server fornisce valore**: quando espone capacità che **non sono già disponibili come CLI standard**. Un MCP che utilizza le API di GitHub aggiunge poco rispetto a chiedere all'agente di usare quei comandi tramite CLI.
-
-`Context7` espone *documentazione aggiornata* delle librerie del progetto (recuperata via API). Non c'è un equivalente CLI generico.
+- `name`: identificatore del subagent. In chat lo richiami per nome (es. *"usa il subagent code-reviewer per ..."*).
+- `description`: criterio con cui l'agente principale decide a quale subagent delegare, se non lo indichi tu esplicitamente.
+- `tools`: **allowlist** dei tool che il subagent può usare (principio del minimo privilegio: un reviewer non ha bisogno di `Edit`/`Write`). Se ometti il campo, il subagent eredita tutti i tool.
+- `model`: opzionale, il modello da usare per il subagent (`sonnet`, `opus`, `haiku` o `inherit`).
 
 ### Combinare subagent e MCP
 
-Le due esetensioni lavorano insieme senza sovrapporsi:
-- Il **subagent** è un agente specializzato a cui deleghi un compito. Gira in un contesto separato e vede solo ciò che gli serve.
-- L'**MCP** è il set di tool che quel subagent può usare mentre lavora.
+Le due estensioni lavorano insieme senza sovrapporsi:
+- il **subagent** decide *cosa fare e con quali permessi*: gira in un contesto separato e vede solo ciò che gli serve;
+- l'**MCP** gli dà *gli strumenti per farlo*.
 
-In pratica: il subagent decide *cosa fare e con quali permessi*, l'MCP gli dà *gli strumenti per farlo*. Puoi assegnare MCP diversi a subagent diversi — per esempio un subagent "analisi policy" con accesso solo ai tool di lettura, e uno "deploy" con i tool che modificano risorse.
+Puoi assegnare tool MCP diversi a subagent diversi: ad esempio un subagent di analisi con i soli tool di lettura e uno di deploy con i tool che modificano risorse.
 
 ## Hands-on
 
-### Step 1 - Attiva Context7 via MCP e usalo
+**Prima di iniziare**: prepara lo starter di questo modulo (`modules/M2-capacita/starters/<linguaggio>/`) come descritto nello [Step 3 del Setup](../../README.md#step-3---prepara-lo-starter-del-tuo-linguaggio). I test devono passare (6 test). Questo starter contiene già `PUT` e `DELETE` dal modulo M1.
 
-Il file di configurazione MCP è già presente al root del workspace: `.mcp.json`.
+### Step 1 - Usa Context7 via MCP
+
+Il server è già configurato nel file `.mcp.json` al root del repo:
 
 ```json
 {
@@ -67,25 +69,26 @@ Il file di configurazione MCP è già presente al root del workspace: `.mcp.json
 }
 ```
 
-Claude Code rileva automaticamente il file `.mcp.json` all'apertura del workspace e chiede l'approvazione del server `context7`. In alternativa puoi registrare un server con `claude mcp add`.
+`.mcp.json` è la configurazione MCP **di progetto**: è committata nel repo, quindi chiunque apra il workspace ottiene gli stessi server (dopo averli approvati). In alternativa un server si può registrare da terminale con `claude mcp add`.
 
-**Per gestire i server MCP** digita **`/mcp`** nel pannello Claude Code: mostra lo stato dei server registrati e permette abilitazione e autenticazione.
+**Checkpoint**: digita `/mcp` in Claude Code. `context7` deve risultare connesso. Se non lo è, abilitalo da quel menu (vedi [Setup, Step 4](../../README.md#step-4---approva-il-server-mcp-context7)).
 
-Ora chiedi all'agente:
-> Nel progetto `@modules/M2-capacita/starters/<linguaggio>` verifica che l'handler di `POST /tasks` usi l'API attuale della libreria del mio starter (FastAPI / Hono / ASP.NET Core). Usa Context7 per recuperare le docs più recenti e dimmi se ci sono pattern più moderni per la validazione.
+In una nuova conversazione chiedi:
 
-Osserva: l'agente invoca un tool di Context7, riceve le docs e produce un'analisi confrontando il codice attuale con l'API documentata.
+> Nel progetto `@modules/M2-capacita/starters/<linguaggio>` verifica che l'handler di `POST /tasks` usi l'API attuale della libreria del mio starter (FastAPI / Hono / ASP.NET Core). Usa Context7 per recuperare la documentazione più recente e dimmi se ci sono pattern più moderni per la validazione. Al termine forniscimi un report e non modificare il codice.
+
+**Risultato atteso**: nel flusso della risposta compaiono le chiamate ai tool `resolve-library-id` e `query-docs` di Context7 (approva quando Claude chiede il permesso). La risposta confronta il codice dello starter con la documentazione recuperata. Non serve applicare i suggerimenti.
 
 ### Step 2 - Crea il subagent `code-reviewer`
 
-Crea il file `.claude/agents/code-reviewer.md` **nella root del workspace** con questo contenuto:
+Crea il file `.claude/agents/code-reviewer.md` **al root del repository** con questo contenuto:
 
 ```markdown
 ---
 name: code-reviewer
 description: Specialized subagent for code review. Invoke when you want a structured review of a file or function for correctness, security, CLAUDE.md compliance, and test coverage.
-tools: Read, Grep, Glob, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
-model: sonnet
+tools: Read, Grep, Glob, mcp__context7__resolve-library-id, mcp__context7__query-docs
+model: opus
 ---
 
 # Code Reviewer Subagent
@@ -98,20 +101,20 @@ You are a rigorous but constructive code reviewer. Your output is a structured r
 2. **Read the file under review** and closely related files (tests, store, helpers).
 3. **Return a structured output** in these five sections:
 
-   ### Correctness
-   Obvious bugs, unhandled edge cases, race conditions, off-by-one errors.
+  ### Correctness
+    Obvious bugs, unhandled edge cases, race conditions, off-by-one errors.
 
-   ### Security
-   Unvalidated input, data leaks, missing authorization, outdated dependencies.
+  ### Security
+    Unvalidated input, data leaks, missing authorization, outdated dependencies.
 
-   ### CLAUDE.md compliance
-   Places where the code violates the conventions stated in CLAUDE.md (naming, error format, status codes). Cite the specific rule.
+  ### CLAUDE.md compliance
+    Places where the code violates the conventions stated in CLAUDE.md (naming, error format, status codes). Cite the specific rule.
 
-   ### Test coverage
-   Cases not covered by existing tests. Suggest which tests are missing.
+  ### Test coverage
+    Cases not covered by existing tests. Suggest which tests are missing.
 
-   ### Suggested fixes
-   For each problem identified, propose a concrete fix (code snippet when applicable).
+  ### Suggested fixes
+    For each problem identified, propose a concrete fix (code snippet when applicable).
 
 ## How you operate
 
@@ -121,27 +124,32 @@ You are a rigorous but constructive code reviewer. Your output is a structured r
 - If the file is well-written, say so. Do not invent problems.
 ```
 
-Nota la allowlist di tool: nessun `Edit`/`Write`, solo lettura e ricerca (`Read, Grep, Glob`). Inoltre i tool del server MCP `context7` (`mcp__context7__...`) sono inclusi, quindi il subagent può usarli per verificare le convenzioni aggiornate. Stesso principio del minimo privilegio: il subagent non modifica codice. `model: sonnet` è l'alias idiomatico di Claude Code.
+Nota l'allowlist dei tool: nessun `Edit`/`Write`, solo lettura e ricerca (`Read, Grep, Glob`) più i due tool di Context7, che il subagent può usare per verificare le API aggiornate delle librerie. Il subagent non può modificare il codice: può solo suggerire.
 
-Reference: `modules/M2-capacita/solution/.claude/agents/code-reviewer.md`.
+**Checkpoint**: se la cartella `.claude/agents/` non esisteva prima di questo step, **riavvia Claude Code** (esci e rilancia `claude`): il primo agente di una nuova cartella `agents` viene caricato solo al riavvio, mentre le modifiche successive al file vengono rilevate in automatico. Poi chiedi a Claude *"quali subagent hai a disposizione?"*: `code-reviewer` deve comparire nell'elenco.
 
-### Step 3.1 - Invoca il subagent `code-reviewer`
+### Step 3 - Invoca il subagent `code-reviewer`
 
-In Claude Code invoca il subagent con **`@code-reviewer`** (digitando `@` compare il typeahead degli agenti) e chiedi:
-> @code-reviewer revisiona il controller dei task (`TasksEndpoints.cs` / `routes.ts` / `main.py`) nel progetto `@modules/M2-capacita/starters/<linguaggio>` per correttezza, sicurezza e conformità ad CLAUDE.md.
+Chiedi a Claude di usare il subagent nominandolo, e indica il file del tuo linguaggio (`Tasks/TasksEndpoints.cs`, `src/tasks/routes.ts` o `app/main.py`):
 
-Osserva:
-- l'output è strutturato nei 5 blocchi definiti dal subagent (Correctness, Security, CLAUDE.md compliance, Test coverage, Suggested fixes).
-- Nessuna modifica al codice è fatta dal subagent, solo suggerimenti.
-- Il subagent è stato richiamato esplicitamente tramite `@code-reviewer`. In alternativa puoi descrivere il task e lasciare che sia Claude a delegare al subagent in base alla sua `description`, oppure gestire gli agenti con il comando `/agents`.
+> Usa il subagent code-reviewer per revisionare il file degli endpoint dei task nel progetto `@modules/M2-capacita/starters/<linguaggio>` per correttezza, sicurezza e conformità a CLAUDE.md.
+
+**Risultato atteso**:
+- nella chat compare l'esecuzione del subagent `code-reviewer`, separata dalla conversazione principale;
+- l'output è strutturato nelle 5 sezioni definite nel file (Correctness, Security, CLAUDE.md compliance, Test coverage, Suggested fixes);
+- **nessun file viene modificato**: il subagent non ha i tool per farlo.
+
+In alternativa puoi descrivere il task senza nominare il subagent (es. *"fai una code review di ..."*) e lasciare che sia Claude a delegare al subagent in base alla sua `description`.
 
 ## Wrap
 
-- **Subagent**: unità di esecuzione delegata, contesto isolato, output strutturato, eventualmente parallelizzabile.
-- **MCP**: protocollo per esporre tool all'agente. Vale la pena quando il problema risolto **non è già coperto da una CLI standard**.
+- **MCP**: protocollo per dare tool nuovi all'agente. Vale la pena quando il problema **non è già coperto da una CLI standard**.
+- **Subagent**: unità di esecuzione delegata, contesto isolato, output strutturato, tool limitati da un'allowlist, eventualmente parallelizzabile.
 
 ## Problemi?
 
-Se ti blocchi: `solution/.claude/agents/code-reviewer.md` contiene la versione di riferimento da copiare nella root del repo.
+- **`context7` non connesso**: digita `/mcp`, abilita il server e riprova in una nuova conversazione. L'endpoint è pubblico, ma richiede connessione a internet.
+- **Claude non vede il subagent `code-reviewer`**: verifica che il file sia in `.claude/agents/` al root del repo (non nello starter) e riavvia Claude Code: il primo agente in una nuova cartella `.claude/agents/` viene caricato solo al riavvio.
+- Subagent di riferimento: `modules/M2-capacita/solution/.claude/agents/code-reviewer.md`, da copiare in `.claude/agents/` al root del repo.
 
 ➡️ Prossimo modulo: [`../M3-governance/README.md`](../M3-governance/README.md)

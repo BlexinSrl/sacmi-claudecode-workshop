@@ -5,7 +5,7 @@ metadata:
   type: project
 ---
 
-## Convenzioni di naming e struttura — Task API
+## Convenzioni di naming e struttura - Task API
 
 ### Path degli endpoint
 - **Formato**: kebab-case nei path (es. `/tasks`, `/tasks/stats`), mai camelCase (`/taskStats`).
@@ -24,4 +24,4 @@ metadata:
 
 **How to apply:** nuovi endpoint mantengono `TaskItem` immutabile e usano i metodi dello store per creare/rimpiazzare; non introdurre un DB né middleware (auth, logging, ecc.).
 
-[[task-api-validation]] — correlata: la validazione è parte del contratto d'input.
+[[task-api-validation]] - correlata: la validazione è parte del contratto d'input.

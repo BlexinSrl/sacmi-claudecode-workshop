@@ -5,7 +5,7 @@ metadata:
   type: project
 ---
 
-## Regole di validazione — Task API
+## Regole di validazione - Task API
 
 Input invalido restituisce **sempre HTTP 400** con body:
 
@@ -21,7 +21,7 @@ Input invalido restituisce **sempre HTTP 400** con body:
 
 ### Implementazione per linguaggio
 
-- .NET: `Tasks/TasksEndpoints.cs` — validazione manuale (`IsNullOrWhiteSpace`, confronto `status`) prima della logica, ritorna `Results.BadRequest(new { error = ... })`.
+- .NET: `Tasks/TasksEndpoints.cs` - validazione manuale (`IsNullOrWhiteSpace`, confronto `status`) prima della logica, ritorna `Results.BadRequest(new { error = ... })`.
 - TypeScript: validazione nelle route in `src/tasks/routes.ts`, ritorna `c.json({ error: ... }, 400)`.
 - Python: `pydantic.BaseModel` per la forma + check espliciti; un `exception_handler(HTTPException)` in `app/main.py` mappa ogni errore a `{"error": exc.detail}`.
 
@@ -29,4 +29,4 @@ Input invalido restituisce **sempre HTTP 400** con body:
 
 **How to apply:** ogni nuovo endpoint valida l'input prima di toccare lo store; aggiungi sempre un test sull'error case che asserisce `{ "error": ... }` e lo status 400.
 
-[[status-codes-and-responses]] — il 400 fa parte della tabella dei codici di stato.
+[[status-codes-and-responses]] - il 400 fa parte della tabella dei codici di stato.

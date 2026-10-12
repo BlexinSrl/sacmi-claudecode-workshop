@@ -1,3 +1,3 @@
-- [Task API Validation Rules](task-api-validation.md) — formato errore 400 e campi richiesti per ogni verbo
-- [Naming Conventions](naming-conventions.md) — path kebab-case, store in-memory, record/dataclass immutabili
-- [Status Codes & Responses](status-codes-and-responses.md) — codici HTTP per operazione, header Location su 201
+- [Task API Validation Rules](task-api-validation.md) - formato errore 400 e campi richiesti per ogni verbo
+- [Naming Conventions](naming-conventions.md) - path kebab-case, store in-memory, record/dataclass immutabili
+- [Status Codes & Responses](status-codes-and-responses.md) - codici HTTP per operazione, header Location su 201
